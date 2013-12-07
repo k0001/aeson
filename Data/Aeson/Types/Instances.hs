@@ -65,7 +65,7 @@ import Data.Maybe (fromMaybe)
 import Data.Monoid (Dual(..), First(..), Last(..), mappend)
 import Data.Ratio (Ratio, (%), numerator, denominator)
 import Data.Text (Text, pack, unpack)
-import Data.Time (UTCTime, ZonedTime(..), TimeZone(..))
+import Data.Time (UTCTime, ZonedTime(..), TimeZone(..), Day)
 import Data.Time.Format (FormatTime, formatTime, parseTime)
 import Data.Traversable (traverse)
 import Data.Vector (Vector)
@@ -510,6 +510,17 @@ instance ToJSON UTCTime where
 instance FromJSON UTCTime where
     parseJSON = withText "UTCTime" $ \t ->
         case parseTime defaultTimeLocale "%FT%T%QZ" (unpack t) of
+          Just d -> pure d
+          _      -> fail "could not parse ISO-8601 date"
+    {-# INLINE parseJSON #-}
+
+instance ToJSON Day where
+    toJSON = toJSON . formatTime defaultTimeLocale "%F"
+    {-# INLINE toJSON #-}
+
+instance FromJSON Day where
+    parseJSON = withText "Day" $ \t ->
+        case parseTime defaultTimeLocale "%F" (unpack t) of
           Just d -> pure d
           _      -> fail "could not parse ISO-8601 date"
     {-# INLINE parseJSON #-}
